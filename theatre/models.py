@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import UniqueConstraint
 
 
 class Actor(models.Model):
@@ -29,8 +31,8 @@ class Play(models.Model):
 
 class TheatreHall(models.Model):
     name = models.CharField(max_length=255)
-    rows = models.IntegerField()
-    seats_in_row = models.IntegerField()
+    rows = models.PositiveIntegerField()
+    seats_in_row = models.PositiveIntegerField()
 
     def __str__(self):
         return self.name
@@ -56,10 +58,24 @@ class Reservation(models.Model):
 
 
 class Ticket(models.Model):
-    row = models.IntegerField()
-    seat = models.IntegerField()
+    row = models.PositiveIntegerField()
+    seat = models.PositiveIntegerField()
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=["performance", "row", "seat"], name="unique_ticket_performance_row_seat")
+        ]
+
+    def clean(self):
+        theatre_hall = self.performance.theatre_hall
+        if self.row > theatre_hall.rows or self.seat > theatre_hall.seats_in_row:
+            raise ValidationError("Row or seat exceeds theatre hall capacity.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Ticket for Row: {self.row}, Seat: {self.seat}"
