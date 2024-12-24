@@ -29,6 +29,20 @@ class PlaySerializer(serializers.ModelSerializer):
         fields = ("id", "title", "description", "genres", "actors")
 
 
+class PlayListSerializer(PlaySerializer):
+    genres = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field="name"
+    )
+    actors = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field="full_name"
+    )
+
+
+class PlayRetrieveSerializer(PlaySerializer):
+    genres = GenreSerializer(many=True, read_only=True)
+    actors = ActorSerializer(many=True, read_only=True)
+
+
 class TheatreHallSerializer(serializers.ModelSerializer):
     class Meta:
         model = TheatreHall
@@ -39,6 +53,24 @@ class PerformanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Performance
         fields = ("id", "play", "theatre_hall", "show_time")
+
+
+class PerformanceListSerializer(PerformanceSerializer):
+    play_title = serializers.CharField(source="play.title", read_only=True)
+    theatre_hall_name = serializers.CharField(
+        source="theatre_hall.name", read_only=True)
+    theatre_hall_capacity = serializers.IntegerField(
+        source="theatre_hall.capacity", read_only=True)
+
+    class Meta:
+        model = Performance
+        fields = ("id", "show_time", "play_title",
+                  "theatre_hall_name", "theatre_hall_capacity")
+
+
+class PerformanceRetrieveSerializer(PerformanceSerializer):
+    play = PlayListSerializer()
+    theatre_hall = TheatreHallSerializer()
 
 
 class ReservationSerializer(serializers.ModelSerializer):
