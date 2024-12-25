@@ -85,9 +85,9 @@ class TicketSerializer(serializers.ModelSerializer):
         fields = ("id", "row", "seat", "performance")
 
     def validate(self, attrs):
+        performance = attrs.get("performance")
         row = attrs.get("row")
         seat = attrs.get("seat")
-        performance = attrs.get("performance")
 
         if not performance:
             raise serializers.ValidationError(
@@ -96,8 +96,21 @@ class TicketSerializer(serializers.ModelSerializer):
 
         theatre_hall = performance.theatre_hall
 
-        if row > theatre_hall.rows or seat > theatre_hall.seats_in_row:
-            raise serializers.ValidationError("Row or seat exceeds theatre hall capacity.")
+        for ticket_attr_value, ticket_attr_name, theatre_hall_attr_name in [
+            (row, "row", "rows"),
+            (seat, "seat", "seats_in_row"),
+        ]:
+            count_attrs = getattr(theatre_hall, theatre_hall_attr_name)
+            if not (1 <= ticket_attr_value <= count_attrs):
+                raise serializers.ValidationError(
+                    {
+                        ticket_attr_name: f"{ticket_attr_name} "
+                        f"number must be in available range: "
+                        f"(1, {theatre_hall_attr_name}): "
+                        f"(1, {count_attrs})"
+                    }
+                )
+        return attrs
 
 
 class ReservationSerializer(serializers.ModelSerializer):
