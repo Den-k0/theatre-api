@@ -76,7 +76,7 @@ class PerformanceRetrieveSerializer(PerformanceSerializer):
 class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reservation
-        fields = ("id", "created_at", "user", "tickets")
+        fields = ("id", "created_at", "tickets")
 
 
 class TicketSerializer(serializers.ModelSerializer):
