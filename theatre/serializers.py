@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from theatre.models import (
     Actor,
@@ -75,9 +76,28 @@ class PerformanceRetrieveSerializer(PerformanceSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
+    performance = serializers.PrimaryKeyRelatedField(
+        queryset=Performance.objects.all()
+    )
+
     class Meta:
         model = Ticket
         fields = ("id", "row", "seat", "performance")
+
+    def validate(self, attrs):
+        row = attrs.get("row")
+        seat = attrs.get("seat")
+        performance = attrs.get("performance")
+
+        if not performance:
+            raise serializers.ValidationError(
+                {"performance": "Performance is required"}
+            )
+
+        theatre_hall = performance.theatre_hall
+
+        if row > theatre_hall.rows or seat > theatre_hall.seats_in_row:
+            raise serializers.ValidationError("Row or seat exceeds theatre hall capacity.")
 
 
 class ReservationSerializer(serializers.ModelSerializer):
