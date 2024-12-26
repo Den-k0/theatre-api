@@ -36,6 +36,10 @@ class GenreViewSet(viewsets.ModelViewSet):
 class PlayViewSet(viewsets.ModelViewSet):
     queryset = Play.objects.all()
 
+    @staticmethod
+    def _params_to_ints(query_string):
+        return [int(str_id) for str_id in query_string.split(",")]
+
     def get_serializer_class(self):
         if self.action == "list":
             return PlayListSerializer
@@ -45,8 +49,26 @@ class PlayViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
+
+        actors = self.request.query_params.get("actors")
+        if actors:
+            actors = self._params_to_ints(actors)
+            queryset = queryset.filter(actors__id__in=actors)
+
+        genres = self.request.query_params.get("genres")
+        if genres:
+            genres = self._params_to_ints(genres)
+            queryset = queryset.filter(genres__id__in=genres)
+
+        title = self.request.query_params.get("title")
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+
+        queryset = queryset.distinct()
+
         if self.action in ("list", "retrieve"):
             return queryset.prefetch_related("actors", "genres")
+
         return queryset
 
 
