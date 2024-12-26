@@ -1,4 +1,5 @@
 from django.db.models import F, Count
+from django.utils.dateparse import parse_date
 from rest_framework import viewsets
 
 from theatre.models import (
@@ -90,6 +91,15 @@ class PerformanceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
+        date = self.request.query_params.get("date")
+        play = self.request.query_params.get("play")
+
+        if date:
+            date = parse_date(date)
+            queryset = queryset.filter(show_time__date=date)
+
+        if play:
+            queryset = queryset.filter(play_id=play)
 
         if self.action == "list":
             return (
