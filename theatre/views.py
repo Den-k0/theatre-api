@@ -1,8 +1,10 @@
 from django.db.models import F, Count
 from django.utils.dateparse import parse_date
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from theatre.models import (
     Actor,
@@ -25,6 +27,7 @@ from theatre.serializers import (
     PerformanceListSerializer,
     PerformanceRetrieveSerializer,
     ReservationListSerializer,
+    PlayImageSerializer,
 )
 
 
@@ -66,6 +69,8 @@ class PlayViewSet(
             return PlayListSerializer
         if self.action == "retrieve":
             return PlayRetrieveSerializer
+        if self.action == "upload_image":
+            return PlayImageSerializer
         return PlaySerializer
 
     def get_queryset(self):
@@ -91,6 +96,19 @@ class PlayViewSet(
             return queryset.prefetch_related("actors", "genres")
 
         return queryset
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="upload-image"
+    )
+    def upload_image(self, request, pk=None):
+        """http://127.0.0.1:8000/api/theatre/play/5/upload-image/"""
+        play = self.get_object()
+        serializer = self.get_serializer(play, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TheatreHallViewSet(

@@ -1,7 +1,11 @@
+import os
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import UniqueConstraint
+from django.utils.text import slugify
 
 
 class Actor(models.Model):
@@ -23,11 +27,24 @@ class Genre(models.Model):
         return self.name
 
 
+def play_image_path(instance: "Play", filename: str) -> str:
+    """
+    image.jpg: upload_to="upload/play" -->
+    media/upload/play/image-SOME-RANDOM_SYBMOLS.jpg
+    """
+    filename = (
+        f"{slugify(instance.title)}-{uuid.uuid4()}"
+        f"{os.path.splitext(filename)[1]}"
+    )
+    return os.path.join("upload", "play", filename)
+
+
 class Play(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     genres = models.ManyToManyField(Genre, related_name="movies", blank=True)
     actors = models.ManyToManyField(Actor, related_name="movies", blank=True)
+    image = models.ImageField(null=True, upload_to=play_image_path)
 
     def __str__(self):
         return self.title
