@@ -1,6 +1,7 @@
 from django.db.models import F, Count
 from django.utils.dateparse import parse_date
 from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
 
 from theatre.models import (
     Actor,
@@ -121,9 +122,16 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         return queryset.distinct()
 
 
+class ReservationSetPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = "page_size"
+    max_page_size = 10
+
+
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+    pagination_class = ReservationSetPagination
 
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
