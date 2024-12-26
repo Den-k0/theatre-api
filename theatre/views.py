@@ -1,4 +1,5 @@
 from django.db.models import F, Count
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.utils.dateparse import parse_date
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -110,6 +111,30 @@ class PlayViewSet(
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "title",
+                type=str,
+                description="Filter by title name",
+                required=False,
+            ),
+            OpenApiParameter(
+                "genres",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by genres ID"
+            ),
+            OpenApiParameter(
+                "actors",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by actors ID"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of plays"""
+        return super().list(request, *args, **kwargs)
+
 
 class TheatreHallViewSet(
     mixins.ListModelMixin,
@@ -168,6 +193,24 @@ class PerformanceViewSet(
             return queryset.select_related()
 
         return queryset.distinct()
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="date",
+                type={"type": "string", "format": "date"},
+                description="Filter by date (format YYYY-DD-MM)"
+            ),
+            OpenApiParameter(
+                "play",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by play ID"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of play performances"""
+        return super().list(request, *args, **kwargs)
 
 
 class ReservationSetPagination(PageNumberPagination):
