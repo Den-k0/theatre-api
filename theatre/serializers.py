@@ -70,8 +70,20 @@ class PerformanceListSerializer(PerformanceSerializer):
 
 
 class PerformanceRetrieveSerializer(PerformanceSerializer):
-    play = PlayListSerializer()
-    theatre_hall = TheatreHallSerializer()
+    play = PlayListSerializer(many=False, read_only=True)
+    theatre_hall = TheatreHallSerializer(many=False, read_only=True)
+    taken_places = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Performance
+        fields = ("id", "play", "theatre_hall", "show_time", "taken_places")
+
+    @staticmethod
+    def get_taken_places(obj):
+        return [
+            {"row": ticket.row, "seat": ticket.seat}
+            for ticket in obj.tickets.all()
+        ]
 
 
 class TicketSerializer(serializers.ModelSerializer):
