@@ -31,9 +31,10 @@ RUN pip install -r requirements.txt
 
 COPY . .
 RUN mkdir -p /files/media
-
 RUN chown -R django-user /files/media
 RUN chmod -R 755 /files/media
+
+RUN chmod +x /app/start.sh
 
 # Switch to the non-privileged user to run the application.
 USER django-user

@@ -10,11 +10,7 @@ services:
       - ./:/app
       - my_media:/files/media
     command: >
-      sh -c "python manage.py wait_for_db &&
-      python manage.py migrate &&
-      python manage.py loaddata theatre_api_db_data.json &&
-      python manage.py createsuperuser --noinput || true &&
-      python manage.py runserver 0.0.0.0:8000"
+      sh -c "./start.sh"
     depends_on:
       - db
 
