@@ -104,7 +104,10 @@ class PlayViewSet(
         url_path="upload-image"
     )
     def upload_image(self, request, pk=None):
-        """http://127.0.0.1:8000/api/theatre/play/5/upload-image/"""
+        """
+        Upload an image for a play.
+        URL: http://127.0.0.1:8000/api/theatre/play/<id>/upload-image/
+        """
         play = self.get_object()
         serializer = self.get_serializer(play, data=request.data)
         serializer.is_valid(raise_exception=True)
