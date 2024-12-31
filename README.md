@@ -32,4 +32,9 @@ Test credentials (auto-created superuser):
 
 ## Theatre Database Structure
 
-![Theatre Database Structure](theatre_diagram.webp)
+![Theatre Database Structure](images/theatre_diagram.webp)
+
+## Theatre Swagger Documentation
+![Theatre Database Structure](images/swagger_doc_image_demo1.webp)
+![Theatre Database Structure](images/swagger_doc_image_demo2.webp)
+![Theatre Database Structure](images/swagger_doc_image_demo3.webp)
